@@ -82,6 +82,7 @@ def get_word_data(line, ex):
 
 def get_examples_from_dataset(dataset_filename, output_filename):
     with open(dataset_filename, 'r') as f:
+        filtered_examples = 0
         preprocessed_dataset = []
         ex = None
 
@@ -93,7 +94,10 @@ def get_examples_from_dataset(dataset_filename, output_filename):
                 # - there are multiple empty lines together -> skip
 
                 if ex:
-                    preprocessed_dataset.append(ex)
+                    if not has_chinese_char(ex):
+                        preprocessed_dataset.append(ex)
+                    else:
+                        filtered_examples += 1
                     ex = None
 
             elif line[0] == "#":
@@ -114,6 +118,10 @@ def get_examples_from_dataset(dataset_filename, output_filename):
             elif line[0].isdigit():
                 # We add the data for each word
                 get_word_data(line, ex)
+
+    if filtered_examples > 0:
+        print(
+            f'{filtered_examples} examples were filtered for having chinese characters')
 
     with open(output_filename, 'w') as f:
         json.dump(preprocessed_dataset, f)
